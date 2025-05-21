@@ -59,6 +59,11 @@
 			<version>1.18.38</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.honerlaw</groupId>
+			<artifactId>audio-fingerprint</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
