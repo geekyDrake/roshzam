@@ -24,12 +24,7 @@ public class FingerPrintingService {
         this.dbService = dbService;
     }
 
-    // Convenience method - default to new repo
     public CompletionStage<HttpStatus> storeAudioFingerPrint(final File incomingFile, final String filename) {
-        return storeAudioFingerPrint(incomingFile, filename, true);
-    }
-
-    public CompletionStage<HttpStatus> storeAudioFingerPrint(final File incomingFile, final String filename, final boolean useNewRepository) {
 
         return CompletableFuture.completedStage(incomingFile)
                 .thenApply(file -> {
@@ -44,11 +39,7 @@ public class FingerPrintingService {
                 .thenApply(entries -> {
                     // Can't run operation async yet - transactional context issue flushes the DB before I can use it
                     // Future improvement is to get the async version running
-                        if (useNewRepository) {
-                            dbService.saveHashEntriesToDb(entries);
-                        } else {
-                            dbService.addAudioHashEntriesToOldDB(entries);
-                        }
+                    dbService.saveHashEntriesToDb(entries);
                     return HttpStatus.OK;
                 })
                 .exceptionally(e -> {
