@@ -47,7 +47,7 @@ public class FingerPrintingService {
                 });
     }
 
-    private HashedPeak[] getFingerPrint(final File incomingFile) {
+    public HashedPeak[] getFingerPrint(final File incomingFile) {
         try {
             // Create fingerprint
             final AudioFile audioFile = new AudioFile(incomingFile);

@@ -15,8 +15,8 @@ public class AudioHashEntry {
 
     protected AudioHashEntry(){}
 
-    public AudioHashEntry(final Long timetstamp, final String filename){
-        this.timestamp = timetstamp;
+    public AudioHashEntry(final Long timestamp, final String filename){
+        this.timestamp = timestamp;
         this.filename = filename;
     }
 

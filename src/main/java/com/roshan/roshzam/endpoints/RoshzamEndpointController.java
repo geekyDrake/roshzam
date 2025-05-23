@@ -2,9 +2,11 @@ package com.roshan.roshzam.endpoints;
 
 import com.roshan.roshzam.services.FingerPrintingService;
 import com.roshan.roshzam.services.JpaDatabaseService;
+import com.roshan.roshzam.services.QueryMatchingService;
 import com.roshan.roshzam.util.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,16 +22,13 @@ import java.util.concurrent.CompletionStage;
 @RestController
 public class RoshzamEndpointController {
 
-    private final FingerPrintingService fingerPrintingService;
-    private final JpaDatabaseService jpaDatabaseService;
+    @Autowired
+    private FingerPrintingService fingerPrintingService;
+    @Autowired
+    private JpaDatabaseService jpaDatabaseService;
+    @Autowired
+    private QueryMatchingService queryMatchingService;
 
-    public RoshzamEndpointController(
-            final FingerPrintingService fingerPrintingService,
-            final JpaDatabaseService jpaDatabaseService
-            ) {
-        this.fingerPrintingService = fingerPrintingService;
-        this.jpaDatabaseService = jpaDatabaseService;
-    }
 
     private final static Logger logger = LoggerFactory.getLogger(RoshzamEndpointController.class);
 
@@ -47,10 +46,24 @@ public class RoshzamEndpointController {
             return fingerPrintingService.storeAudioFingerPrint(convertedFile, originalFilename);
 
         } catch (IOException e) {
-            logger.error(String.format("Song upload failed. Name: %s, content type: %s. Message: %s",
+            logger.error(String.format("Song upload failed. Name: %s, content type: %s. Message: %s \n",
                     file.getOriginalFilename(), file.getContentType(), e.getMessage()));
             return CompletableFuture.completedStage(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/roshzam/query-song")
+    public String querySong(@RequestParam("file") MultipartFile file) {
+        System.out.printf("Request received for %s \n", file.getOriginalFilename());
+        final File audioSnippet;
+        try {
+            audioSnippet = FileUtility.convertMultipartFileToFile(file, file.getOriginalFilename());
+
+        } catch (IOException e) {
+            logger.error(String.format("File format conversion failed for %s \n", file.getOriginalFilename()));
+            return "Query matching failed";
+        }
+        return queryMatchingService.matchSnippetToSong(audioSnippet);
     }
 
     @GetMapping("/roshzam/test-db")

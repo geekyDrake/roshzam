@@ -1,10 +1,14 @@
 package com.roshan.roshzam.services;
 
+import com.roshan.roshzam.clients.AudioHashEntryRepository;
 import com.roshan.roshzam.clients.AudioHashRepository;
 import com.roshan.roshzam.domain.models.HashDataPointHolder;
 import com.roshan.roshzam.domain.models.dto.AudioHash;
 import com.roshan.roshzam.domain.models.dto.AudioHashEntry;
+import com.roshan.roshzam.domain.querys.SongCount;
+import io.honerlaw.audio.fingerprint.hash.peak.HashedPeak;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -12,16 +16,13 @@ import java.util.List;
 @Service
 public class JpaDatabaseService {
 
-    private final AudioHashRepository audioHashRepository;
+    @Autowired
+    private AudioHashRepository audioHashRepository;
+    @Autowired
+    private AudioHashEntryRepository audioHashEntryRepository;
 
     // Use JPA with the H2 in-memory database. See pom.xml
-    public JpaDatabaseService(
-            AudioHashRepository audioHashRepository
-    ) {
-        this.audioHashRepository = audioHashRepository;
-    }
 
-//    @Transactional
     public void saveHashEntriesToDb(List<HashDataPointHolder> entries) {
         entries
             .forEach(entry -> {
@@ -38,6 +39,10 @@ public class JpaDatabaseService {
                 audioHashRepository.save(hash);
             });
         System.out.printf("Entries added to DB: %d", entries.size());
+    }
+
+    public List<SongCount> queryDbForMatches(List<String> hashesToMatch){
+        return audioHashEntryRepository.countByFilenameForHashes(hashesToMatch);
     }
 
     private AudioHashEntry createAudioHashEntry(final HashDataPointHolder input) {
