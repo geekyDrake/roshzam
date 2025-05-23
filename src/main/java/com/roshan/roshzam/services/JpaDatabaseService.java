@@ -21,7 +21,7 @@ public class JpaDatabaseService {
         this.audioHashRepository = audioHashRepository;
     }
 
-    @Transactional
+//    @Transactional
     public void saveHashEntriesToDb(List<HashDataPointHolder> entries) {
         entries
             .forEach(entry -> {

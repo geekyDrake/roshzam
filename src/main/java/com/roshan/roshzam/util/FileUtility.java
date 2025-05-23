@@ -9,12 +9,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class FileUtility {
     private static final Logger logger = LoggerFactory.getLogger(FileUtility.class);
-    public static File convertMultipartFileToFile(MultipartFile multipartFile, String filename) throws IOException {
+    public static File convertMultipartFileToFile(final MultipartFile multipartFile, final String filename) throws IOException {
         File tempFile = File.createTempFile("upload_", "_" + filename);
         multipartFile.transferTo(tempFile);
+
+        // cleans up on JVM shutdown - backup in case the program exits earlier than expected
+        tempFile.deleteOnExit();
+        return tempFile;
+    }
+
+    public static File copyToTempFile(final File incomingFile, final String safeName) throws IOException {
+        // Copy to system temp folder with new name
+        Path targetPath = Paths.get(System.getProperty("java.io.tmpdir"), safeName);
+        Files.copy(incomingFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        File tempFile = targetPath.toFile();
 
         // cleans up on JVM shutdown - backup in case the program exits earlier than expected
         tempFile.deleteOnExit();

@@ -40,6 +40,7 @@ public class RoshzamEndpointController {
             String originalFilename = file.getOriginalFilename();
             String sanitisedFilename = originalFilename.replaceAll("\\s+", "_");
 
+            System.out.printf("Request received for %s \n", originalFilename);
             // Convert to File
             File convertedFile = FileUtility.convertMultipartFileToFile(file, sanitisedFilename);
 
@@ -54,6 +55,7 @@ public class RoshzamEndpointController {
 
     @GetMapping("/roshzam/test-db")
     public String testAudioHashDB() {
+        System.out.println("DB test request received");
         return jpaDatabaseService.testGetAudioHashes().toString();
     }
 }
