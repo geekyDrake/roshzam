@@ -1,8 +1,6 @@
 package com.roshan.roshzam.clients;
 
-import com.roshan.roshzam.domain.models.AudioHashEntry;
-import org.springframework.data.repository.CrudRepository;
+import com.roshan.roshzam.domain.models.dto.AudioHash;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AudioHashRepository extends CrudRepository<AudioHashEntry, String> {
-    AudioHashEntry findByHexHash(String hexHash);
-}
+public interface AudioHashRepository extends JpaRepository<AudioHash, String> {}

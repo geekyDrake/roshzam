@@ -1,4 +1,4 @@
-package com.roshan.roshzam.domain.models;
+package com.roshan.roshzam.domain.models.dto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -6,15 +6,15 @@ import lombok.Getter;
 
 @Getter
 @Entity
-public class AudioHashEntry {
+public class OldAudioHashRecord {
     @Id
     private String hexHash;
-    private int timeStamp;
+    private long timeStamp;
     private String fileName;
 
-    protected AudioHashEntry() {}
+    protected OldAudioHashRecord() {}
 
-    public AudioHashEntry(String hexHash, int peakOneTime, String fileName){
+    public OldAudioHashRecord(String hexHash, long peakOneTime, String fileName){
         this.hexHash = hexHash;
         this.timeStamp = peakOneTime;
         this.fileName = fileName;

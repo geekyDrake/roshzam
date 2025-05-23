@@ -1,4 +1,4 @@
-package com.roshan.roshzam.domain.models;
+package com.roshan.roshzam.domain.models.dto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

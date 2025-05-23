@@ -1,33 +1,82 @@
 package com.roshan.roshzam.services;
 
 import com.roshan.roshzam.clients.AudioHashRepository;
+import com.roshan.roshzam.clients.OldAudioHashRepository;
 import com.roshan.roshzam.clients.TestRepository;
-import com.roshan.roshzam.domain.models.AudioHashEntry;
-import com.roshan.roshzam.domain.models.TestRecord;
+import com.roshan.roshzam.domain.models.HashDataPointHolder;
+import com.roshan.roshzam.domain.models.dto.AudioHash;
+import com.roshan.roshzam.domain.models.dto.AudioHashEntry;
+import com.roshan.roshzam.domain.models.dto.OldAudioHashRecord;
+import com.roshan.roshzam.domain.models.dto.TestRecord;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+// Responsibility: Save and retrieve entries from DBs
 @Service
 public class JpaDatabaseService {
+
+    private final AudioHashRepository audioHashRepository;
     private final TestRepository testRepository;
-    private final AudioHashRepository repository;
+    private final OldAudioHashRepository oldAudioHashRepository;
 
     // Use JPA with the H2 in-memory database. See pom.xml
     public JpaDatabaseService(
+            AudioHashRepository audioHashRepository,
             TestRepository testRepository,
-            AudioHashRepository repository
+            OldAudioHashRepository oldAudioHashRepository
     ) {
+        this.audioHashRepository = audioHashRepository;
         this.testRepository = testRepository;
-        this.repository = repository;
+        this.oldAudioHashRepository = oldAudioHashRepository;
     }
 
-    public CompletionStage<Void> addAudioHashEntries(List<AudioHashEntry> entries) {
-        return CompletableFuture.runAsync(() -> repository.saveAll(entries));
+    @Transactional
+    public void saveHashEntriesToDb(List<HashDataPointHolder> entries) {
+        entries
+            .forEach(entry -> {
+                AudioHash hash = audioHashRepository.findById(entry.hexHash()).orElseGet(() ->
+                        new AudioHash(entry.hexHash())
+                );
+                // Creates connection between hash and hashEntry
+                hash.addEntry(createAudioHashEntry(entry));
+
+                /*
+                Cascade saves all entries (even in the AudioHashEntryRepository)
+                without having to explicitly write it
+                 */
+                audioHashRepository.save(hash);
+            });
+        System.out.printf("Entries added to DB: %d", entries.size());
+    }
+
+    private AudioHashEntry createAudioHashEntry(final HashDataPointHolder input) {
+        return new AudioHashEntry(input.timestamp(), input.filename());
+    }
+
+    // Flawed because multiple entries with the same hash cannot be stored
+    @Deprecated
+    public Void addAudioHashEntriesToOldDB(List<HashDataPointHolder> holderList) {
+        var entries = holderList.stream()
+                .map( entry -> new OldAudioHashRecord(entry.hexHash(), entry.timestamp(), entry.filename())).toList();
+        oldAudioHashRepository.saveAll(entries);
+        return null;
+    }
+
+    // ============== TEST METHODS ===================
+
+    public List<AudioHash> testGetAudioHashes() {
+        final int startingEntry = 50;
+        var entries = audioHashRepository.findAll().stream().toList();
+        return entries.subList(Math.min(startingEntry, entries.size()), Math.min(startingEntry + 30, entries.size()));
+    }
+
+    public List<OldAudioHashRecord> testGetAudioHashesFromOldDb() {
+        var entries = StreamSupport.stream(oldAudioHashRepository.findAll().spliterator(), false).toList();
+        return entries.subList(0, Math.min(50, entries.size()));
     }
 
     public String addTestRecord(final String request) {
@@ -42,10 +91,5 @@ public class JpaDatabaseService {
             sb.append(s);
         });
         return sb.toString();
-    }
-
-    public List<AudioHashEntry> testGetAudioHashes() {
-        var entries = StreamSupport.stream(repository.findAll().spliterator(), false).toList();
-        return entries.subList(0, Math.min(50, entries.size()));
     }
 }

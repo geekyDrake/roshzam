@@ -53,5 +53,8 @@ public class RoshzamEndpointController {
     }
 
     @GetMapping("/roshzam/test-db")
-    public String testAudioHashDB() {return jpaDatabaseService.testGetAudioHashes().toString();}
+    public String testAudioHashDB(@RequestParam(value = "useNewRepo", defaultValue = "true") boolean useNewRepo) {
+        return useNewRepo ? jpaDatabaseService.testGetAudioHashes().toString()
+                : jpaDatabaseService.testGetAudioHashesFromOldDb().toString();
+    }
 }
