@@ -1,51 +1,59 @@
 package com.roshan.roshzam.services;
 
+import com.roshan.roshzam.clients.AudioHashEntryRepository;
 import com.roshan.roshzam.clients.AudioHashRepository;
-import com.roshan.roshzam.clients.TestRepository;
-import com.roshan.roshzam.domain.models.AudioHashEntry;
-import com.roshan.roshzam.domain.models.TestRecord;
+import com.roshan.roshzam.domain.models.HashDataPointHolder;
+import com.roshan.roshzam.domain.models.dto.AudioHash;
+import com.roshan.roshzam.domain.models.dto.AudioHashEntry;
+import com.roshan.roshzam.domain.querys.SongCount;
+import io.honerlaw.audio.fingerprint.hash.peak.HashedPeak;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
+// Responsibility: Save and retrieve entries from DBs
 @Service
 public class JpaDatabaseService {
-    private final TestRepository testRepository;
-    private final AudioHashRepository repository;
+
+    @Autowired
+    private AudioHashRepository audioHashRepository;
+    @Autowired
+    private AudioHashEntryRepository audioHashEntryRepository;
 
     // Use JPA with the H2 in-memory database. See pom.xml
-    public JpaDatabaseService(
-            TestRepository testRepository,
-            AudioHashRepository repository
-    ) {
-        this.testRepository = testRepository;
-        this.repository = repository;
+
+    public void saveHashEntriesToDb(List<HashDataPointHolder> entries) {
+        entries
+            .forEach(entry -> {
+                AudioHash hash = audioHashRepository.findById(entry.hexHash()).orElseGet(() ->
+                        new AudioHash(entry.hexHash())
+                );
+                // Creates connection between hash and hashEntry
+                hash.addEntry(createAudioHashEntry(entry));
+
+                /*
+                Cascade saves all entries (even in the AudioHashEntryRepository)
+                without having to explicitly write it
+                 */
+                audioHashRepository.save(hash);
+            });
+        System.out.printf("Entries added to DB: %d", entries.size());
     }
 
-    public CompletionStage<Void> addAudioHashEntries(List<AudioHashEntry> entries) {
-        return CompletableFuture.runAsync(() -> repository.saveAll(entries));
+    public List<SongCount> queryDbForMatches(List<String> hashesToMatch){
+        return audioHashEntryRepository.countByFilenameForHashes(hashesToMatch);
     }
 
-    public String addTestRecord(final String request) {
-        testRepository.save(new TestRecord(request));
-        return String.format("Record[%s] added to database", request);
+    private AudioHashEntry createAudioHashEntry(final HashDataPointHolder input) {
+        return new AudioHashEntry(input.timestamp(), input.filename());
     }
 
-    public String getAllTestRecords() {
-        final StringBuilder sb = new StringBuilder("Here is a list of all records in test DB: \n");
-        testRepository.findAll().forEach(record -> {
-            var s = record.toString() + "\n";
-            sb.append(s);
-        });
-        return sb.toString();
-    }
+    // ============== TEST METHODS ===================
 
-    public List<AudioHashEntry> testGetAudioHashes() {
-        var entries = StreamSupport.stream(repository.findAll().spliterator(), false).toList();
-        return entries.subList(0, Math.min(50, entries.size()));
+    public List<AudioHash> testGetAudioHashes() {
+        final int startingEntry = 50;
+        var entries = audioHashRepository.findAll().stream().toList();
+        return entries.subList(Math.min(startingEntry, entries.size()), Math.min(startingEntry + 30, entries.size()));
     }
 }

@@ -1,34 +1,31 @@
 package com.roshan.roshzam.services;
 
-import com.roshan.roshzam.domain.models.AudioHashEntry;
+import com.roshan.roshzam.domain.models.HashDataPointHolder;
 import com.roshan.roshzam.util.FileUtility;
 import io.honerlaw.audio.fingerprint.AudioFile;
 import io.honerlaw.audio.fingerprint.hash.peak.HashedPeak;
-import jakarta.persistence.Convert;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
+// Responsibility: Extract fingerprint AND Store (should refactor the Store part out into some other service)
 @Service
 public class FingerPrintingService {
 
     private JpaDatabaseService dbService;
 
-    public FingerPrintingService(JpaDatabaseService dbService){
+    public FingerPrintingService(JpaDatabaseService dbService) {
         this.dbService = dbService;
     }
 
     public CompletionStage<HttpStatus> storeAudioFingerPrint(final File incomingFile, final String filename) {
+
         return CompletableFuture.completedStage(incomingFile)
                 .thenApply(file -> {
                     try {
@@ -39,8 +36,10 @@ public class FingerPrintingService {
                     }
                 })
                 .thenApply(hashedPeaks -> prepareTableEntries(hashedPeaks, filename))
-                .thenApply( entries -> {
-                    dbService.addAudioHashEntries(entries);
+                .thenApply(entries -> {
+                    // Can't run operation async yet - transactional context issue flushes the DB before I can use it
+                    // Future improvement is to get the async version running
+                    dbService.saveHashEntriesToDb(entries);
                     return HttpStatus.OK;
                 })
                 .exceptionally(e -> {
@@ -48,7 +47,7 @@ public class FingerPrintingService {
                 });
     }
 
-    private HashedPeak[] getFingerPrint(final File incomingFile) {
+    public HashedPeak[] getFingerPrint(final File incomingFile) {
         try {
             // Create fingerprint
             final AudioFile audioFile = new AudioFile(incomingFile);
@@ -64,14 +63,13 @@ public class FingerPrintingService {
         }
     }
 
-    private List<AudioHashEntry> prepareTableEntries(final HashedPeak[] rawHashes, final String filename) {
+    private List<HashDataPointHolder> prepareTableEntries(final HashedPeak[] rawHashes, final String filename) {
         return Arrays.stream(rawHashes).parallel()
                 .map(hashedPeak ->
-                        new AudioHashEntry(
+                        new HashDataPointHolder(
                                 hashedPeak.getHashAsHex(),
                                 hashedPeak.getPeakOne().getTime(),
                                 filename)
                 ).toList();
     }
-
 }
