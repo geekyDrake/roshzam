@@ -5,6 +5,8 @@ snippets/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+samples/
+snippets/
 
 ### STS ###
 .apt_generated
