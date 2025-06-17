@@ -6,8 +6,6 @@ import com.roshan.roshzam.domain.models.HashDataPointHolder;
 import com.roshan.roshzam.domain.models.dto.AudioHash;
 import com.roshan.roshzam.domain.models.dto.AudioHashEntry;
 import com.roshan.roshzam.domain.querys.SongCount;
-import io.honerlaw.audio.fingerprint.hash.peak.HashedPeak;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -43,6 +41,10 @@ public class JpaDatabaseService {
 
     public List<SongCount> queryDbForMatches(List<String> hashesToMatch){
         return audioHashEntryRepository.countByFilenameForHashes(hashesToMatch);
+    }
+
+    public List<Long> queryDbForTimestamps(String filename){
+        return audioHashEntryRepository.getTimestampsForFile(filename);
     }
 
     private AudioHashEntry createAudioHashEntry(final HashDataPointHolder input) {

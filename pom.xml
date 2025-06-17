@@ -59,15 +59,23 @@
 			<version>1.18.38</version>
 			<scope>provided</scope>
 		</dependency>
+		<!--Logger-->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>2.0.17</version>
 		</dependency>
+		<!--Audio fingerprint library-->
 		<dependency>
 			<groupId>io.honerlaw</groupId>
 			<artifactId>audio-fingerprint</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<!--Statistics library-->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
 		</dependency>
 	</dependencies>
 
