@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 @Service
 public class QueryMatchingService {
 
+    // TODO: Correct to 0.8 after fixing issues
+    public static final double FILTER_PERCENTAGE = 0;
     @Autowired
     FingerPrintingService fingerPrintingService;
     @Autowired
@@ -31,7 +33,7 @@ public class QueryMatchingService {
         // Choose between results within 20% of top song
         long topValue = result.getFirst().getCount();
         result = result.stream()
-                .filter(song -> song.getCount() > (topValue * 0.8))
+                .filter(song -> song.getCount() > (topValue * FILTER_PERCENTAGE))
                 .toList();
         System.out.println("Output from top 20% count");
         result.forEach(s ->

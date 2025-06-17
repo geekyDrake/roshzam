@@ -1,13 +1,17 @@
 # README
-
+See [Project Status](Docs/CurrentStatus.md) and [Learnings](Docs/Learnings.md)
 ## Audio Ingestion Endpoints
 ### Query App
-**Query DB for match**
+**Query DB for audio match**
 - Choose whether to use statistical or naive matching. Statistical matching used by default
 ```shell
 curl -X POST http://localhost:8080/roshzam/query-song \
      -F "statistical=true" \
      -F "file=@snippets/FLG_snippet_1.mp3"
+```
+**Query DB for filename hashes**
+```shell
+curl "http://localhost:8080/roshzam/query-db?filename='02_-_Future_Looks_Good.mp3'"
 ```
 ### Ingest MP3 file
 **Ingest file from filepath**

@@ -76,4 +76,13 @@ public class RoshzamEndpointController {
         System.out.println("DB test request received");
         return jpaDatabaseService.testGetAudioHashes().toString();
     }
+
+    @GetMapping("/roshzam/query-db")
+    public void queryAudioHashDb(
+            @RequestParam(value="filename") String filename
+    ) {
+        System.out.println("Query DB request received");
+        System.out.println(jpaDatabaseService.testQueryDBForAudioHashes(filename).toString());
+    }
+
 }

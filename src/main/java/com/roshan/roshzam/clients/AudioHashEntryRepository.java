@@ -27,4 +27,14 @@ public interface AudioHashEntryRepository extends JpaRepository<AudioHashEntry, 
             ORDER BY e.timestamp
     """)
     List<Long> getTimestampsForFile(@Param("filename") String filename);
+
+    @Query("""
+            SELECT e.audioHash.hash
+            FROM AudioHashEntry e
+            WHERE e.filename = :filename
+            """)
+    List<String> getHashesForFile(@Param("filename") String filename);
+
+    @Query("SELECT DISTINCT e.filename FROM AudioHashEntry e")
+    List<String> getAllFilenames();
 }
