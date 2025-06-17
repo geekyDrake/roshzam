@@ -53,8 +53,12 @@ public class RoshzamEndpointController {
     }
 
     @PostMapping("/roshzam/query-song")
-    public String querySong(@RequestParam("file") MultipartFile file) {
-        System.out.printf("Request received for %s \n", file.getOriginalFilename());
+    public String querySong(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "statistical", defaultValue = "true") String useStatisticalMatch
+    ) {
+        System.out.printf("Request received for %s, using %s query matching \n",
+                file.getOriginalFilename(), useStatisticalMatch.equals("true") ? "statistical" : "naive");
         final File audioSnippet;
         try {
             audioSnippet = FileUtility.convertMultipartFileToFile(file, file.getOriginalFilename());
@@ -63,7 +67,8 @@ public class RoshzamEndpointController {
             logger.error(String.format("File format conversion failed for %s \n", file.getOriginalFilename()));
             return "Query matching failed";
         }
-        return queryMatchingService.matchSnippetToSong(audioSnippet);
+        return useStatisticalMatch.equals("true") ? queryMatchingService.matchSnippetToSongHistogram(audioSnippet) :
+                queryMatchingService.matchSnippetToSongNaive(audioSnippet);
     }
 
     @GetMapping("/roshzam/test-db")

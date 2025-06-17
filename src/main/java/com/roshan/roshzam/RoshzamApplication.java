@@ -27,6 +27,7 @@ public class RoshzamApplication {
 
 	@Bean
 	public CommandLineRunner setupDB() {
+		System.out.println(System.getProperty("java.version"));
 		// Memory inefficient file stream - could use DirectoryStream in the future
 		return args -> {
 			File[] originalAudioFiles = new File(SAMPLES_DIRECTORY).listFiles();
