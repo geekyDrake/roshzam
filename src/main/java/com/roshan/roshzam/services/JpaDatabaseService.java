@@ -22,6 +22,7 @@ public class JpaDatabaseService {
     // Use JPA with the H2 in-memory database. See pom.xml
 
     public void saveHashEntriesToDb(List<HashDataPointHolder> entries) {
+        System.out.printf("Adding entry to DB: %s \n", entries.getFirst().filename());
         entries
             .forEach(entry -> {
                 AudioHash hash = audioHashRepository.findById(entry.hexHash()).orElseGet(() ->
@@ -36,7 +37,7 @@ public class JpaDatabaseService {
                  */
                 audioHashRepository.save(hash);
             });
-        System.out.printf("Entries added to DB: %d", entries.size());
+        System.out.printf("Entries added to DB: %d \n", entries.size());
     }
 
     public List<SongCount> queryDbForMatches(List<String> hashesToMatch){
@@ -57,5 +58,11 @@ public class JpaDatabaseService {
         final int startingEntry = 50;
         var entries = audioHashRepository.findAll().stream().toList();
         return entries.subList(Math.min(startingEntry, entries.size()), Math.min(startingEntry + 30, entries.size()));
+    }
+
+    public List<String> testQueryDBForAudioHashes(final String filename) {
+        System.out.println("All filenames");
+        audioHashEntryRepository.getAllFilenames().forEach(System.out::println);
+        return audioHashEntryRepository.getHashesForFile(filename);
     }
 }
