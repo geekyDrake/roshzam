@@ -1,0 +1,14 @@
+# Ignore all files in the 'audio' directory
+samples/
+snippets/
+
+# Or, to ignore specific file types (e.g., mp3 and wav)
+*.mp3
+*.wav
+
+# Generic files
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
