@@ -19,6 +19,9 @@ This page tracks project progress and next steps.
 - Long-term goal: build a custom fingerprinting algorithm, but need a working baseline first for comparison.
 
 ## Added
+**18th August**
+- Dockerfile for containerisation
+
 **17th June**
 - Statistical approach to query matching
 - Endpoint and logs for debugging database and fingerprinting issues
